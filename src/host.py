@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+from difflib import SequenceMatcher
+
 SERVICES = (
     'ftp',
     'ssh',
@@ -21,7 +23,7 @@ class Host(object):
         pass
 
     @classmethod
-    def listHosts(self):
+    def listAllHostnames(self):
         pass
 
     @classmethod
@@ -33,8 +35,12 @@ class Host(object):
         pass
 
     @classmethod
-    def searchHost(self):
-        pass
+    def searchHost(self, hostname, top=5):
+        hosts = self.listAllHostnames()
+        hosts = sorted(hosts,
+            key=lambda x : SequenceMatcher(None, hostname, x).ratio(),
+            reverse=True)
+        return hosts[:top]
 
     def connect(self):
         pass
