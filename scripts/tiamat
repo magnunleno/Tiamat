@@ -1,4 +1,56 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+"""Tiamat - A CLI host connection tool.
+
+Usage:
+  tiamat <user@host:port> [ftp|ssh|telnet]
+  tiamat <host> [--fqdn|--host|--lookup [<dns-server>]]
+  tiamat (-h|--help)
+  tiamat --version
+
+Options:
+  -h --help     Show this screen.
+  --fqdn        Get an FQDN for an address
+  --host        Get host information
+  --lookup      Lookup in a DNS server for the record
+
+"""
+import os
 import tiamat
+import socket
+
+from docopt import docopt
+from tiamat import utils
+
+if __name__ == '__main__':
+    args = docopt(__doc__, version='Tiamat %s'%tiamat.__version__)
+    host = args['<user@host:port>']
+    if host:
+        user = None
+        port = None
+        if args['ftp']:
+            conn_str = utils.getFTPString(host)
+        elif args['ssh']:
+            conn_str = utils.getSSHString(host)
+        elif args['telnet']:
+            conn_str = utils.getTelnetString(host)
+        else:
+            conn_str = utils.getSSHString(host)
+        os.system(conn_str)
+        exit(0)
+
+    host = args['<host>']
+    if host:
+        (user, host, port) = utils.decodeHost(host)
+        if args ['--fqdn']:
+            print socket.getfqdn(host)
+        elif args ['--host']:
+            if utils.isIP(host):
+                utils.getHostByAddress(host)
+            else:
+                utils.getHostByName(host)
+        elif args ['--lookup']:
+            utils.getDNSLookUp(host, args['<dns-server>'])
+        exit(0)
+
